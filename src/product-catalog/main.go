@@ -117,7 +117,7 @@ func main() {
 		if err := tp.Shutdown(context.Background()); err != nil {
 			log.Fatalf("Tracer Provider Shutdown: %v", err)
 		}
-		log.Println("Shutdown tracer provider")
+		log.Println("Shutdown tracer provider.")
 	}()
 
 	mp := initMeterProvider()
