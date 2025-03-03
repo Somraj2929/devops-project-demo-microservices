@@ -40,7 +40,6 @@ import (
 	pb "github.com/opentelemetry/opentelemetry-demo/src/product-catalog/genproto/oteldemo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
@@ -117,7 +116,7 @@ func main() {
 		if err := tp.Shutdown(context.Background()); err != nil {
 			log.Fatalf("Tracer Provider Shutdown: %v", err)
 		}
-		log.Println("Shutdown tracer provider")
+		log.Println("Shutdown tracer provider.")
 	}()
 
 	mp := initMeterProvider()
@@ -200,15 +199,12 @@ func loadProductCatalog() {
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 
 	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				log.Info("Reloading Product Catalog...")
-				catalog, err = readProductFiles()
-				if err != nil {
-					log.Errorf("Error reading product files: %v", err)
-					continue
-				}
+		for range ticker.C {
+			log.Info("Reloading Product Catalog...")
+			catalog, err = readProductFiles()
+			if err != nil {
+				log.Errorf("Error reading product files: %v", err)
+				continue
 			}
 		}
 	}()
@@ -288,7 +284,7 @@ func (p *productCatalog) GetProduct(ctx context.Context, req *pb.GetProductReque
 
 	// GetProduct will fail on a specific product when feature flag is enabled
 	if p.checkProductFailure(ctx, req.Id) {
-		msg := fmt.Sprintf("Error: Product Catalog Fail Feature Flag Enabled")
+		msg := "Error: Product Catalog Fail Feature Flag Enabled"
 		span.SetStatus(otelcodes.Error, msg)
 		span.AddEvent(msg)
 		return nil, status.Errorf(codes.Internal, msg)
@@ -345,9 +341,9 @@ func (p *productCatalog) checkProductFailure(ctx context.Context, id string) boo
 	return failureEnabled
 }
 
-func createClient(ctx context.Context, svcAddr string) (*grpc.ClientConn, error) {
-	return grpc.DialContext(ctx, svcAddr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
-	)
-}
+// func createClient(ctx context.Context, svcAddr string) (*grpc.ClientConn, error) {
+// 	return grpc.DialContext(ctx, svcAddr,
+// 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+// 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+// 	)
+// }
